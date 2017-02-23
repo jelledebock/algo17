@@ -2,11 +2,15 @@
 #define __SORTEERMETHODE
 #include "sortvector.h"
 #include <iostream>
+#include "chrono.h"
+#include "csv.h"
     using std::move;
     using std::swap;
     using std::endl;
     using std::cout;
+    using std::string;
 #include <algorithm>   // voor sort()-methode uit STL
+#include <sstream>
 
 /** class Sorteermethode
     \brief abstracte klasse van methodes die een vector sorteren
@@ -30,10 +34,87 @@ class Sorteermethode{
 /// zodat bv.
 ///    T a=5;
 /// geldig is.
-void meet(int kortste, int langste, ostream& os);
+    void meet(int kortste, int langste, ostream& os);
+    void meetCSV(int kortste, int langste, ostream& os, string bestandsnaam);
 
 
 
+};
+template <class T>
+void Sorteermethode<T>::meetCSV(int kortste, int langste, ostream& os, const string bestandsnaam){
+    Chrono chrono;
+    CsvData csv(bestandsnaam);
+    std::vector<std::vector<float>> data;
+
+    for(int i=kortste; i<langste; i=i*10){
+        Sortvector<T> random(i);
+        Sortvector<T> gesorteerd(i);
+        Sortvector<T> omgekeerd(i);
+
+        std::vector<float> meetresultaat;
+        meetresultaat.push_back((float)i);
+
+        random.vul_random_zonder_dubbels();
+        omgekeerd.vul_omgekeerd();
+
+        //random gesorteerd testen
+        chrono.start();
+        operator()(random);
+        chrono.stop();
+        meetresultaat.push_back(chrono.tijd());
+
+        //gesorteerd testen
+        chrono.start();
+        operator()(gesorteerd);
+        chrono.stop();
+        meetresultaat.push_back(chrono.tijd());
+
+        //omgekeerd gesorteerd testen
+        chrono.start();
+        operator()(omgekeerd);
+        chrono.stop();
+        meetresultaat.push_back(chrono.tijd());
+
+        csv.voegDataToe(meetresultaat);
+    }
+};
+
+template <class T>
+void Sorteermethode<T>::meet(int kortste, int langste, ostream& os){
+    Chrono chrono;
+    os<<std::setw(10)<<std::right<<"lengte"<<"\t"<<std::setw(10)<<"random"<<"\t"<<std::setw(10)<<"gesorteerd"<<"\t"<<std::setw(10)<<"omgekeerd"<<endl;
+    for(int i=kortste; i<langste; i=i*10){
+        os<<std::right<<std::setw(10)<<i<<"\t";
+        Sortvector<T> random(i);
+        Sortvector<T> gesorteerd(i);
+        Sortvector<T> omgekeerd(i);
+
+        random.vul_random_zonder_dubbels();
+        omgekeerd.vul_omgekeerd();
+
+        os<<std::fixed;
+        os<<std::setw(10);
+
+        //random gesorteerd testen
+        chrono.start();
+        operator()(random);
+        chrono.stop();
+        os<<std::right<<chrono.tijd()<<"\t";
+
+        //gesorteerd testen
+        chrono.start();
+        operator()(gesorteerd);
+        chrono.stop();
+        os<<std::setw(10)<<std::right<<chrono.tijd()<<"\t";
+
+        //omgekeerd gesorteerd testen
+        chrono.start();
+        operator()(omgekeerd);
+        chrono.stop();
+        os<<std::setw(10)<<std::right<<chrono.tijd();
+
+        os<<endl;
+    }
 };
 
 /** \class STLSort
@@ -80,5 +161,4 @@ class ShellSort : public Sorteermethode<T>{
     public:
         void operator()(vector<T> & v) const;
 };
-
 #endif 
