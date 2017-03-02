@@ -1,6 +1,9 @@
 #include <gtest/gtest.h>
 #include "../src/sortvector.h"
 #include "../src/sorteermethode.h"
+#include "../src/Mergesort.h"
+#include "../src/Mergesort_bu.h"
+
 
 TEST(Sortvector, vul_range_test)
 {
@@ -56,4 +59,64 @@ TEST(Sorteermethode, test_insertion_sort)
     InsertionSort<int> insertionSort;
     insertionSort(sv);
     EXPECT_EQ(sv.is_gesorteerd(), true);
+}
+
+TEST(Mergesort, test_mergesort_random){
+    vector<int> vec {2,0,2,4,7,6,3,1,10,11};
+    vector<int> sorted {0,1,2,2,3,4,6,7,10,11};
+
+    Mergesort<int> mergesort;
+    mergesort(vec);
+    EXPECT_EQ(vec, sorted);
+}
+
+
+TEST(Mergesort, test_mergesort_omgekeerd){
+    Sortvector<int> vec(20);
+    vec.vul_omgekeerd();
+
+    Mergesort<int> mergesort;
+    mergesort(vec);
+
+    EXPECT_EQ(vec.is_gesorteerd(), true);
+}
+
+TEST(Mergesort, test_mergesort_reeds_gesorteerd){
+    Sortvector<int> vec(20);
+    vec.vul_range();
+
+    Mergesort<int> mergesort;
+    mergesort(vec);
+
+    EXPECT_EQ(vec.is_gesorteerd(), true);
+}
+
+TEST(Mergesort_bu, test_mergesort_bu_random){
+    vector<int> vec {2,0,2,4,7,6,3,1,10,11};
+    vector<int> sorted {0,1,2,2,3,4,6,7,10,11};
+
+    Mergesort_bu<int> mergesort_bu;
+    mergesort_bu(vec);
+    EXPECT_EQ(vec, sorted);
+}
+
+
+TEST(Mergesort_bu, test_mergesort_bu_omgekeerd){
+    Sortvector<int> vec(20);
+    vec.vul_omgekeerd();
+
+    Mergesort_bu<int> mergesort_bu;
+    mergesort_bu(vec);
+
+    EXPECT_EQ(vec.is_gesorteerd(), true);
+}
+
+TEST(Mergesort_bu, test_mergesort_bu_reeds_gesorteerd){
+    Sortvector<int> vec(20);
+    vec.vul_range();
+
+    Mergesort_bu<int> mergesort_bu;
+    mergesort_bu(vec);
+
+    EXPECT_EQ(vec.is_gesorteerd(), true);
 }

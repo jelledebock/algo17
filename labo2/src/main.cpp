@@ -3,6 +3,7 @@
 #include "sorteermethode.h"
 #include "Nstring.h"
 #include "Mergesort.h"
+#include "Mergesort_bu.h"
 
 using namespace std;
 
@@ -32,6 +33,12 @@ int main()
     cout<<"Voor: "<<random<<endl;
     Mergesort<int> mergesort;
     mergesort(random);
+    cout<<"Na: "<<random<<endl;
+
+    random.vul_random_zonder_dubbels();
+    cout<<"Voor: "<<random<<endl;
+    Mergesort_bu<int> mergesort_bu;
+    mergesort_bu(random);
     cout<<"Na: "<<random<<endl;
 
     return 0;

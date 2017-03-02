@@ -35,16 +35,16 @@ void Mergesort<T>::operator()(vector <T> &v) const {
 }
 
 template <typename T>
-void merge(vector<T> &v, vector<T> &other, int l, int m, int r){
+void merge(vector<T> &from, vector<T> &to, int l, int m, int r){
     int i=l;
     int j=m;
 
     //je weet exact hoeveel keer je een element gaat plaatsen (dus tellertje k)
     for(int k=i; k<r; k++){
-        if(i<m && (j>=r || v[i] <= v[j])){
-            other[k]=v[i++];
+        if(i<m && (j>=r || from[i] <= from[j])){
+            to[k]=from[i++];
         }else{
-            other[k]=v[j++];
+            to[k]=from[j++];
         }
     }
 }
