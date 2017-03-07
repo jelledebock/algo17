@@ -3,6 +3,8 @@
 #include "../src/sorteermethode.h"
 #include "../src/Mergesort.h"
 #include "../src/Mergesort_bu.h"
+#include "../src/quicksort_dual_pivot.h"
+
 
 
 TEST(Sortvector, vul_range_test)
@@ -117,6 +119,37 @@ TEST(Mergesort_bu, test_mergesort_bu_reeds_gesorteerd){
 
     Mergesort_bu<int> mergesort_bu;
     mergesort_bu(vec);
+
+    EXPECT_EQ(vec.is_gesorteerd(), true);
+}
+
+TEST(Quicksort_Dual_Pivot, test_dual_pivot_qs_omgekeerd){
+    Sortvector<int> vec(20);
+    vec.vul_omgekeerd();
+
+    Quicksort_Dual_Pivot<int> quicksort_dp;
+    quicksort_dp(vec);
+
+    EXPECT_EQ(vec.is_gesorteerd(), true);
+}
+
+TEST(Quicksort_Dual_Pivot, test_dual_pivot_qs_random){
+    vector<int> vec={3,4,7,1,2,9,0,10,8,20,15,5,6,13,11,12,19,16,14,17,18};
+
+    Quicksort_Dual_Pivot<int> quicksort_dp;
+    quicksort_dp(vec);
+
+    for(int i=0; i<vec.size(); i++){
+        EXPECT_EQ(i,vec[i]);
+    }
+}
+
+TEST(Quicksort_Dual_Pivot, test_dual_pivot_qs_reeds_gesorteerd){
+    Sortvector<int> vec(20);
+    vec.vul_range();
+
+    Quicksort_Dual_Pivot<int> quicksort_dp;
+    quicksort_dp(vec);
 
     EXPECT_EQ(vec.is_gesorteerd(), true);
 }
