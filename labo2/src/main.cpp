@@ -3,6 +3,7 @@
 #include "sorteermethode.h"
 #include "Nstring.h"
 #include "Mergesort.h"
+#include "quicksort.h"
 #include "Mergesort_bu.h"
 
 using namespace std;
@@ -40,6 +41,14 @@ int main()
     Mergesort_bu<int> mergesort_bu;
     mergesort_bu(random);
     cout<<"Na: "<<random<<endl;
+
+    Sortvector<int> giant(50);
+    giant.vul_random_zonder_dubbels();
+    cout<<"Voor: "<<giant<<endl;
+    Quicksort<int> qs;
+    qs(giant);
+    cout<<"Na: "<<giant<<endl;
+
 
     return 0;
 }

@@ -5,6 +5,7 @@
 #include "../src/Mergesort_bu.h"
 #include "../src/quicksort_dual_pivot.h"
 #include "../src/shellsort.h"
+#include "../src/quicksort.h"
 
 
 TEST(Sortvector, vul_range_test)
@@ -181,6 +182,37 @@ TEST(Shellsort, test_shellsort_reeds_gesorteerd){
 
     Shellsort<int> shellsort;
     shellsort(vec);
+
+    EXPECT_EQ(vec.is_gesorteerd(), true);
+}
+
+TEST(Quicksort, test_quicksort_omgekeerd){
+    Sortvector<int> vec(20);
+    vec.vul_omgekeerd();
+
+    Quicksort<int> qs;
+    qs(vec);
+
+    EXPECT_EQ(vec.is_gesorteerd(), true);
+}
+
+TEST(Quicksort, test_quicksort_random){
+    vector<int> vec={3,4,7,1,2,9,0,10,8,20,15,5,6,13,11,12,19,16,14,17,18};
+
+    Quicksort<int> qs;
+    qs(vec);
+
+    for(int i=0; i<vec.size(); i++){
+        EXPECT_EQ(i,vec[i]);
+    }
+}
+
+TEST(Quicksort, test_quicksort_reeds_gesorteerd){
+    Sortvector<int> vec(20);
+    vec.vul_range();
+
+    Quicksort<int> qs;
+    qs(vec);
 
     EXPECT_EQ(vec.is_gesorteerd(), true);
 }
