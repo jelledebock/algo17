@@ -1,0 +1,654 @@
+\documentclass[a4paper]{article}
+\title{Samenvatting algoritmen}
+\author{Aaron Mousavi (aanvullingen Jelle De Bock)}
+\date{\today}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage[usenames,dvipsnames,svgnames,table]{xcolor}
+
+\definecolor{listinggray}{gray}{0.9}
+\definecolor{lbcolor}{rgb}{0.9,0.9,0.9}
+
+\lstset{%
+	backgroundcolor=\color{lbcolor},
+	tabsize=4,
+	language=C++,
+	captionpos=b,
+	frame=lines,
+	numbers=left,
+	numbersep=5pt,
+	breaklines=true,
+	keywordstyle=\color[rgb]{0,0,1},
+	commentstyle=\color{DarkGreen},
+	stringstyle=\color{red}
+}
+
+\begin{document}
+
+\maketitle
+\newpage
+\section{Asymptotische notaties}
+De naam ``asymptotische notatie'' is gekozen omdat deze notaties enkel geldig zijn voor grote waarden van $n$.
+
+\begin{itemize}
+	\item $\Theta(n)$: de functie is langs boven en onder begrensd met de constanten $c_1$ en $c_2$, daarom ligt de uitvoeringstijd tussen $c_1 \cdot f(n)$ en $c_2 \cdot f(n)$ ligt.
+	\item $O(n)$: is maximum uitvoeringstijd, het zal nooit slechter zijn dat dit. Er wordt geprobeerd om de laagste, bewezen waarde op te schrijven. We kunnen ook zeggen dat het worst case scenario $\Theta(n)$ is, maar de big O is een sterkere notatie.
+	\item $\Omega(n)$: de ondergrens, het algoritme heeft een uitvoeringstijd van minstens $n$. 
+\end{itemize}
+\newpage
+
+\section{Selection sort}
+\subsection*{Kenmerken}
+\begin{itemize}
+	\item Niet stabiel
+	\item Rangschikt ter plaatste
+	\item $\Theta(n^2)$
+	\item Ofwel het kleinste zoeken en vooraan zetten, of het grootste en achteraan zetten.
+\end{itemize}
+
+\subsection*{Algoritme}
+\begin{lstlisting}[language=C++]
+template <typename T>
+void SelectionSort<T>::operator()(vector<T> &vec) const {
+	for(int i=vec.size()-1; i>=0; i--){
+		int maxIndex=zoekGrootste(vec, i);
+		swap(vec[i], vec[maxIndex]);
+    }
+}
+
+template <typename T>
+int SelectionSort<T>::zoekGrootste(const vector<T> & vec, int eindIndex) const {
+	int maxIndex = 0;
+	for(int i=1; i<=eindIndex; i++){
+		if(vec[i] > vec[maxIndex]){
+			maxIndex = i;
+		}
+	}
+	return maxIndex;
+}
+\end{lstlisting}
+
+\subsection*{Opmerkingen}
+\begin{itemize}
+	\item Lidfuncties zijn const, en de vector in de zoekGrootste ook!
+\end{itemize}
+\newpage
+
+\section{Insertion sort}
+\subsection*{Kenmerken}
+\begin{itemize}
+	\item Stabiel
+	\item Rangschikt ter plaatste
+	\item $O(n^2)$
+	\item $\Omega(n)$
+\end{itemize}
+
+\subsection*{Algoritme}
+\begin{lstlisting}[language=C++]
+template <typename T>
+void InsertionSort<T>::operator()(vector<T> &vec) const {
+	for(int i=1; i<vec.size(); i++){
+		 T help;
+        //Voeg element i toe aan het gesorteerde deel 
+        //(de elementen voor i staan in volgorde)
+        help = std::move(v[i]);
+        int j = i-1;
+        while(j>=0 && help<v[j]){
+            //help is kleiner dan het voorgaande element dus
+            //laat element op j plaats maken (schuif op)
+            v[j+1] = std::move(v[j]);
+            j--;
+        }
+        //na de voorgaande lus hebben we de positie van help gevonden
+        //merk op: j+1 we zijn namelijk 1tje te ver gegaan in de while lus
+        v[j+1] = std::move(help);
+	}
+}
+\end{lstlisting}
+
+\subsection*{Opmerkingen}
+\begin{itemize}
+	\item Const niet vergeten.
+	\item Moves!
+	\item i begint bij 1, regel 8 zeker niet vergeten en op het laatste is het ook j+1!
+\end{itemize}
+\newpage
+
+\section{Shell sort}
+\subsection*{Kenmerken}
+\begin{itemize}
+	\item Niet stabiel
+	\item Rangschikt ter plaatste
+	\item $O(n^2)$
+	\item $\Omega(n \cdot log(n))$
+\end{itemize}
+
+\subsection*{Algoritme}
+\begin{lstlisting}[language=C++]
+//Sedgewick's increments, used in the shellsort algorithm
+vector<int> INCREMENTS = {  1391376, 463792, 198768, 86961, 33936,
+                            13776, 4592, 1968, 861, 336,
+                            112, 48, 21, 7, 3, 1
+};
+
+template <typename T>
+void Shellsort<T>::operator()(vector<T> & v) const {
+	//Ga over alle increments
+    for(int i = 0 ; i < INCREMENTS.size() ; i++){
+        int increment = INCREMENTS[i];
+        //Controleer of increment niet te groot is voor onze array
+        if(increment < v.size()){
+            //Ga k-sorteren voor alle elementen startende van het increment
+            for(int j = increment ; j < v.size() ; j++){
+                T temp = v[j];
+                //Insertion sort stap, plaats j-de element op zijn juiste plek, telkens increment-stapjes verder springend
+                int k = j-increment;
+                while(k>=0 && temp < v[k]){
+                	v[k+increment] = v[k];
+                	k-=increment;
+                }
+                v[k+increment]=std::move(temp);
+                
+                /* Evenwaardig getest alternatief 
+		            int k = j;
+		            
+		            while(k-increment>=0 && v[k-increment]>temp){
+		                v[k]=std::move(v[k-increment]);
+		                k-=increment;
+		            }
+		            v[k]=std::move(temp);
+                */
+            }
+        }
+    }
+}
+\end{lstlisting}
+
+\subsection*{Opmerkingen}
+\begin{itemize}
+	\item Bij de laatste regel weer de +incr niet vergeten!
+\end{itemize}
+\newpage
+
+\section{Heap sort}
+\subsection*{Kernmerken}
+\begin{itemize}
+	\item Niet Stabiel
+	\item Ter plaatse
+	\item $\Theta(n \cdot log(n))$
+\end{itemize}
+
+\subsection*{Algoritme heap sort}
+\begin{lstlisting}
+template <typename T>
+void HeapSort<T>::operator()(vector<T> &vec) const {
+	Heap<T> heap(vec, vec.size());
+	heap.buildHeap();
+	for (size_t i = vec.size()-1; i > 0; i--) { // opgepast i > 0!!!
+		// zet wortel (= grootste achteraan) en zet leaf bovenaan
+		T wortel = move(*heap.geefWortel());
+		heap.vervangWortel(vec[i]);
+		vec[i] = move(wortel);
+		heap.percolateDown(0, i);
+	}
+}
+\end{lstlisting}
+
+\subsection*{Algoritmes heap}
+\begin{lstlisting}
+template<class T>
+void Heap<T>::buildHeap(){
+	// dit moet enkel voor de bovenste helft
+	for (int i = vec.size()/2; i >= 0; i--) {
+		percolateDown(i, vec.size());
+	}
+}
+
+template<class T>
+const T* Heap<T>::geefWortel() const {
+	return &vec[0];
+}
+
+template<class T>
+int Heap<T>::getGrootsteKind(int parentIndex, int length){
+	int kind = parentIndex * 2 + 1; // moet bestaan, dus niet oproepen op leaves! Plus 1 want zero based.
+	if(kind + 1 < length){
+		if(vec[kind+1] > vec[kind]){
+			kind+=1;
+		}
+	}
+	return kind;
+}
+
+template<class T>
+void Heap<T>::percolateDown(size_t parentIndex, size_t length){
+	if(parentIndex * 2 + 1 >= length) {
+		return; // parent heeft geen kinderen, en kan dus ook niet zakken
+	}
+
+	T parent = move(vec[parentIndex]);
+	size_t grootsteKindIndex = getGrootsteKind(parentIndex, length);
+	// blijf dit doen tot er geen (groter) kind meer is
+	while ((2*parentIndex+1<length) && vec[grootsteKindIndex] > parent) {
+		// parent wordt child
+		vec[parentIndex] = vec[grootsteKindIndex];
+		parentIndex = grootsteKindIndex;
+	}
+	// alle elementen die groter waren dan de originele parent staan er nu boven, zet nu de oude parent op de laatste plaats
+	// die waarde hier zit toch al in het niveau erboven
+	vec[parentIndex] = move(parent);
+}
+
+template<class T>
+void Heap<T>::vervangWortel(const T& ele){
+	vec[0] = move(ele);
+}
+\end{lstlisting}
+
+\subsection*{Opmerkingen}
+\newpage
+
+\section{Merge sort}
+\subsection*{Kernmerken}
+\begin{itemize}
+	\item Stabiel (deze versie toch)
+	\item Niet ter plaatse
+	\item $\Theta(n \cdot log(n))$
+\end{itemize}
+
+\subsection*{Top down Algoritme}
+\begin{lstlisting}
+template <typename T>
+void Mergesort<T>::mergesort(vector<T> &h, vector<T> &v, int l, int r) const{
+    if(l+1 < r){
+        int m = l+(r-l)/2;
+        mergesort(v, h, l, m);
+        mergesort(v, h, m, r);
+
+        merge(h, v, l, m , r);
+    }
+}
+
+template <typename T>
+void Mergesort<T>::operator()(vector <T> &v) const {
+    vector<T> other(v);  //de andere tabel, waarin we telkens de rechter deeltabel zullen in opslaan
+    mergesort(other,v,0,v.size());
+}
+
+template <typename T>
+void merge(vector<T> &from, vector<T> &to, int l, int m, int r){
+    int i=l;
+    int j=m;
+
+    //je weet exact hoeveel keer je een element gaat plaatsen (dus tellertje k)
+    for(int k=i; k<r; k++){
+        if(i<m && (j>=r || from[i] <= from[j])){
+            to[k]=from[i++];
+        }else{
+            to[k]=from[j++];
+        }
+    }
+}
+\end{lstlisting}
+
+\subsection*{Bottom up Algoritme}
+\begin{lstlisting}
+template <typename T>
+void Mergesort_bu<T>::operator()(vector <T> &v) const {
+    vector<T> temp(v.size());
+    int breedte=1;
+    while(breedte<v.size()){
+        int l=0;
+        while(l+breedte<v.size()){
+            merge_bu(v, temp, l, breedte);
+            l=l+breedte*2;
+        }
+        breedte*=2;
+    }
+}
+
+template <typename T>
+void merge_bu(vector<T> &vec, vector<T> &temp, int l, int width){
+    int i=l;
+    int j=l+width;
+
+    int m = l+width;
+    int r = l+2*width>vec.size()?vec.size():l+2*width;
+    int k=l;
+
+    for(int s=l; s<r; s++){
+        if(i<m && (j>=r || vec[i] <= vec[j])){
+            temp[s]=vec[i++];
+        }else{
+            temp[s]=vec[j++];
+        }
+    }
+
+    for(int s=l; s<r; s++){
+        vec[s]=temp[s];
+    }
+}
+\end{lstlisting}
+\subsection*{Opmerkingen}
+\begin{itemize}
+	\item Hoe doe je dit met een hulp array van $n/2$?
+\end{itemize}
+\newpage
+
+\section{Quick sort}
+\subsection*{Single pivot}
+\begin{lstlisting}
+template <typename T>
+void Quicksort<T>::operator()(vector <T> &v) const {
+    quicksort(v,0, v.size()-1);
+}
+
+template <typename T>
+void Quicksort<T>::quicksort(vector <T> &v, int l, int r) const {
+    //Rangschik deelvector v[l]..[r]
+    if(l<r) {
+        T pivot = v[l];
+        int i=l, j=r;
+        while(v[j]>pivot){
+            j--;
+        }
+        while(i<j){
+            swap(v[i],v[j]);
+            i++;
+            while(v[i]<pivot)
+                i++;
+            j--;
+            while(v[j]>pivot)
+                j--;
+        }
+        quicksort(v, l, j);
+        quicksort(v, j+1, r);
+    }
+}
+\end{lstlisting}
+
+\subsection*{Dual Pivot (JDK aka Yaroslavskiy)}
+\begin{lstlisting}
+template <typename T>
+void Quicksort_Dual_Pivot<T>::operator()(vector <T> &v) const {
+    quicksort_Dual_Pivot(v,0, v.size()-1);
+}
+
+
+template <typename T>
+void Quicksort_Dual_Pivot<T>::quicksort_Dual_Pivot(vector <T> &v, int l, int r) const {
+    if (l < r) {
+        //Pivots
+        T p1 = v[l];
+        T p2 = v[r];
+
+        //Swap the 2 pivots if p1>p2
+        if (p1 > p2) {
+            v[l] = std::move(p2);
+            v[r] = std::move(p1);
+            p1 = v[l];
+            p2 = v[r];
+        }
+		//m is het tellertje waarmee we door de tabel lopen
+		//k is de grens tussen linker en middelste gedeelte (alle waardes <p1)
+		//g is de grens tussen rechter en middelste gedeelte (alle waardes >p2)
+        int k = l + 1;
+        int g = r - 1;
+        int m = k;
+
+        while (m <= g) {
+            if (v[m] < p1) {
+                T temp = std::move(v[k]);
+                v[k] = std::move(v[m]);
+                v[m] = std::move(temp);
+                k++;
+            } else if (v[m] >= p2) {
+                while (v[g] > p2 && m < g) {
+                    g--;
+                }
+                T temp = std::move(v[g]);
+                v[g] = std::move(v[m]);
+                v[m] = std::move(temp);
+
+                g--;
+
+                if (v[m] < p1) {
+                    T temp = std::move(v[m]);
+                    v[m] = std::move(v[k]);
+                    v[k] = temp;
+                    k++;
+                }
+            }
+            m++;
+        }
+        //Zet pivots op hun plek
+        k = k - 1;
+        g = g + 1;
+        T temp = std::move(v[k]);
+        v[k] = std::move(v[l]);
+        v[l] = std::move(temp);
+
+        temp = std::move(v[g]);
+        v[g] = std::move(v[r]);
+        v[r] = std::move(temp);
+
+        quicksort_Dual_Pivot(v, l, k - 1);
+        quicksort_Dual_Pivot(v, k + 1, g - 1);
+        quicksort_Dual_Pivot(v, g + 1, r);
+    }
+}
+\end{lstlisting}
+\newpage
+
+
+\newpage
+
+\section{Counting sort}
+\subsection*{Kenmerken}
+\begin{itemize}
+	\item Stabiel
+	\item Niet ter plaatste
+	\item Sleutels moeten gehele getallen zijn
+	\item Beperkt interval
+	\item $\Theta(n+k)$ met $n$ aantal elementen en $k$ het aantal verschillende sleutels.
+\end{itemize}
+
+\subsection*{Algoritme}
+\begin{lstlisting}
+template <typename T>
+void CountingSort<T>::operator()(vector<T> &vec) const {
+
+	// frequentietabel opstellen
+	vector<int> freq(vec.size(), 0);;
+	for (int i = 0; i < vec.size(); i++) {
+		freq[vec[i]]++; // ervan uitgaande dat vec een getal teruggeeft...
+	}
+
+	// cumulatieve tabel maken
+	for (int i = 1; i < freq.size(); i++) {
+		freq[i] += freq[i-1];
+	}
+	
+	// output tabel maken met het resultaat
+	// overloop terug de originele tabel
+	vector<int> output(vec.size());
+	for (int i = 0; i < vec.size(); i++) {
+		output[freq[vec[i]]-1] = move(vec[i]); // -1!!
+		freq[vec[i]]--;
+	}
+
+	// output kopieren naar de originele tabel
+	for (int i = 0; i < vec.size(); i++) {
+		vec[i] = move(output[i]);
+	}
+}
+\end{lstlisting}
+
+\subsection*{Opmerkingen}
+\newpage
+
+\section{Radix sort}
+\begin{lstlisting}
+// A utility function to get maximum value in arr[]
+int getMax(int arr[], int n)
+{
+    int mx = arr[0];
+    for (int i = 1; i < n; i++)
+        if (arr[i] > mx)
+            mx = arr[i];
+    return mx;
+}
+ 
+// A function to do counting sort of arr[] according to
+// the digit represented by exp.
+void countSort(int arr[], int n, int exp)
+{
+    int output[n]; // output array
+    int i, count[10] = {0};
+ 
+    // Store count of occurrences in count[]
+    for (i = 0; i < n; i++)
+        count[ (arr[i]/exp)%10 ]++;
+ 
+    // Change count[i] so that count[i] now contains actual
+    //  position of this digit in output[]
+    for (i = 1; i < 10; i++)
+        count[i] += count[i - 1];
+ 
+    // Build the output array
+    for (i = n - 1; i >= 0; i--)
+    {
+        output[count[ (arr[i]/exp)%10 ] - 1] = arr[i];
+        count[ (arr[i]/exp)%10 ]--;
+    }
+ 
+    // Copy the output array to arr[], so that arr[] now
+    // contains sorted numbers according to current digit
+    for (i = 0; i < n; i++)
+        arr[i] = output[i];
+}
+ 
+// The main function to that sorts arr[] of size n using 
+// Radix Sort
+void radixsort(int arr[], int n)
+{
+    // Find the maximum number to know number of digits
+    int m = getMax(arr, n);
+ 
+    // Do counting sort for every digit. Note that instead
+    // of passing digit number, exp is passed. exp is 10^i
+    // where i is current digit number
+    for (int exp = 1; m/exp > 0; exp *= 10)
+        countSort(arr, n, exp);
+}
+\end{lstlisting}
+\newpage
+
+\section{Bucket sort}
+\subsection*{Kenmerken}
+\begin{itemize}
+	\item Stabiel: door insertion sort
+	\item Niet ter plaatste
+	\item $O(n^2)$: alles in \'{e}\'{e}n bucket en insertionsort
+	\item $\Theta(n)$
+\end{itemize}
+
+\subsection*{Algoritme}
+
+\begin{lstlisting}
+template <typename T>
+T BucketSort<T>::grootsteValue(vector<T> const &vec) const {
+	// T moet wel zeker getal zijn, of anders een complexere interface maken
+	T grootste = vec[0];
+	for (int i = 0; i < vec.size(); i++) {
+		if(vec[i] > grootste) grootste = vec[i];
+	}
+	return grootste;
+}
+
+template <typename T>
+void BucketSort<T>::operator()(vector<T> &vec) const {
+	// dit houdt alle buckets bij
+	vector<vector<T>> buckets(vec.size());
+	T grootste = grootsteValue(vec);
+
+	// overloop alle waarden
+	for (int i = 0; i < vec.size(); i++) {
+		// voorbeeld hash functie: (value*size)/(max value+1)
+		int bucket = (vec[i] * vec.size())/(grootste+1);
+		buckets[bucket].push_back(move(vec[i]));
+	}
+	
+	// sorteer alle buckets
+	InsertionSort<T> insertionSort;
+	for (int i = 0; i < buckets.size(); i++) {
+		insertionSort(buckets[i]);
+	}
+
+	// leeg alle buckets terug in de array
+	int index=0;
+	for (int i = 0; i < buckets.size(); i++) {
+		for (int j = 0; j < buckets[i].size(); j++) {
+			vec[index++] = move(buckets[i][j]);
+		}
+	}
+}
+\end{lstlisting}
+
+\subsection*{Opmerkingen}
+\newpage
+
+\section{Mogelijks handig}
+\subsection*{Move implementatie voorbeeld}
+\label{sub:Move implementatie voorbeeld}
+
+\begin{lstlisting}
+// Move constructor.
+MemoryBlock(MemoryBlock&& other)
+   : _data(nullptr)
+   , _length(0)
+{
+   std::cout << "In MemoryBlock(MemoryBlock&&). length = " 
+             << other._length << ". Moving resource." << std::endl;
+
+   // Copy the data pointer and its length from the 
+   // source object.
+   _data = other._data;
+   _length = other._length;
+
+   // Release the data pointer from the source object so that
+   // the destructor does not free the memory multiple times.
+   other._data = nullptr;
+   other._length = 0;
+}
+
+// Move assignment operator.
+MemoryBlock& operator=(MemoryBlock&& other)
+{
+   std::cout << "In operator=(MemoryBlock&&). length = " 
+             << other._length << "." << std::endl;
+
+   if (this != &other)
+   {
+      // Free the existing resource.
+      delete[] _data;
+
+      // Copy the data pointer and its length from the 
+      // source object.
+      _data = other._data;
+      _length = other._length;
+
+      // Release the data pointer from the source object so that
+      // the destructor does not free the memory multiple times.
+      other._data = nullptr;
+      other._length = 0;
+   }
+   return *this;
+}
+\end{lstlisting}
+Source: \url{https://msdn.microsoft.com/en-us/library/dd293665.aspx}.
+\end{document}

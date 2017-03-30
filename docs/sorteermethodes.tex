@@ -1,0 +1,205 @@
+\documentclass[11pt]{article}
+%Gummi|065|=)
+\title{\textbf{Grafen en graafalgoritmes}}
+\author{Jelle De Bock}
+\date{Semester II  AJ 2015-2016}
+\usepackage{listings}
+\usepackage{geometry}
+ \geometry{
+ a4paper,
+ total={170mm,257mm},
+ left=20mm,
+ top=20mm,
+ }
+ \usepackage{graphicx}
+ \usepackage{mathtools}
+\DeclarePairedDelimiter\ceil{\lceil}{\rceil}
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+\begin{document}
+
+\maketitle
+
+\section{Bomen}
+\textbf{Meerwegsbomen}: Elke node van een boom heeft potentieel k (geordende) kinderen. Men gaat zover in deze ordening dat wanneer er een element van deze sequentie k niet voorkomt men deze toch als kind nummert maar deze in principe niet bestaat (kan bijvoorbeeld door middel van nullpointer op de i-de plaats). 
+\subsection{Overlopen van binaire bomen}
+\begin{itemize}
+	\item \textbf{preorder} : behandel eerst wortel daarna linker en daarna de rechter deelboom
+	\item \textbf{inorder} : overloop eerst linkse deelboom, dan de wortel en daarna de rechtse deelboom
+	\item \textbf{postorder} : eerst linker deelboom, daarna de rechts en eindig met de wortel
+\end{itemize}
+\subsection{Backtracking}
+\emph{Dit is het systematisch overlopen van alle mogelijkheden die tot een oplossing kan leiden. De pseudocode is gegeven door:}
+\begin{lstlisting}
+void backtracking(){
+	int k = 1 ;
+	bepaal V1;
+	while (k>0){
+		wk = volgend element uit Vk;
+		verwijder wk uit Vk;
+		if(<w1,w2,...,wk> een oplossing is)
+			verwerk <w1,w2,...,wk>;
+		k++; 	//volgende positie
+		bepaal Vk;
+	}
+	k--;
+}
+\end{lstlisting}
+Recursief
+\begin{lstlisting}
+void backtracking_rec(int k){
+	//onderstel k>0
+	bepaal Vk; //als k>n : is deze ledig
+	for(alle wk uit Vk){
+		if(<w1,w2,...,wk> een oplossing is)
+			verwerk <w1,w2,...,wk>
+		backtracking_rec(k+1);
+	}
+}
+
+void backtracking(){
+	backtracking_rec(1);
+}
+\end{lstlisting}
+
+\section{Grafen}
+\emph{Hier volgen een aantal methodes om grafen systematisch te doorzoeken}: De grote problematiek in vergelijking met bomen is dat knooppunten op meerdere manieren bereikt kunnen worden. Er is extra controle nodig om te kijken of een specifieke knoop reeds bezocht is.
+\subsection{Diepte eerst}
+\begin{lstlisting}
+void behandel_knoop(int i){
+	ontdekt[i] = true; //voorlopig is dit alles
+	for(buren j van knoop i){
+		if(!ontdekt[j])
+			behandel_knoop[j];
+	}
+}
+
+void diepte_eerst_zoeken(){
+	//initialisatie: nog geen knopen gezien
+	for(int i=0; i<n ; i++){
+		ontdekt[i] = false;
+	}
+	//Behandel alle knopen
+	for(int i = 0 ; i<n; i++)
+	 if(!ontdekt[i])
+          behandel_knoop(i);	//begin een nieuwe (deel)boom
+}
+\end{lstlisting}
+\subsection{Breedte eerst}
+Code (noot: geraadpleegd op Wikipedia)
+\begin{lstlisting}
+Breadth-First-Search(Graph, root):
+   for each node n in Graph:            
+         n.distance = INFINITY        
+         n.parent = NIL
+
+	create empty queue Q      
+
+    root.distance = 0
+    Q.enqueue(root)                      
+ 
+    while Q is not empty:        
+           current = Q.dequeue()     
+           for each node n that is adjacent to current:	
+               if n.distance == INFINITY:
+				n.distance = current.distance + 1
+				n.parent = current
+				Q.enqueue(n)
+\end{lstlisting}
+\section{Woordenboeken}
+Zoekmethodes: Hebben enkel nut wanneer de tabel geranschikt is.
+\begin{itemize}
+	\item \textbf{Sequentieel zoeken}: Overloop 1 voor 1 de tabel en kijk tot je de sleutel tegenkomt
+	\item \textbf{Binair zoeken}: Verklein de zoektabel steeds met de helft, kijkende naar linker en rechter sleutel.
+	\begin{lstlisting}[language=C++,
+                   directivestyle={\color{black}}
+                   emph={int,char,double,float,unsigned},
+                   emphstyle={\color{blue}}
+                  ]
+	int binair_zoeken(int s, const vector<int> & v){
+		//onderstel v niet ledig
+		//resultaat indien gevonden : index
+		//          indien niet gevonden : -1
+		int l = 0, r = v.size()-1;
+		//Invariant: v[l] < = s <= v[r]
+		while(l<r){
+			int m = l + (r-1)/2; //l <= m < r
+			if (s<= v[m])
+				r = m;
+			else
+				l = m+1;
+		}
+		return s==v[1] ? 1 : -1;
+	}
+	\end{lstlisting}
+	\item \textbf{Interpolerend zoeken} : slechts licht verschillend aan binair zoeken. Men gaat er hier vanuit dat de sleutels uniform verdeeld is, en men gaat het midden berekenen als volgt. \\
+	 \emph{m = (s-v[l])/(v[r]-v[l])}
+\end{itemize}
+\section{Hashtabellen}
+\textbf{Hash collisions :} treden op wanneer de hashfunctie zodanig gekozen is dat voor twee sleutels eenzelfde hashwaarde geproduceerd wordt en ze dus niet van elkaar verschillen in de hashtabel. \\
+\emph{Hoe wordt omgegaan met deze collisions?}
+\begin{itemize}
+	\item \textbf{Separate chaining} brengt alle sleutels die eenzelfde hash hebben onder in een gelinkte lijst. Hierdoor moet wel nog eens sequentieel gezocht worden in de gelinkte lijst, wat de performantie van een hash omlaag brengt.
+	\item \textbf{Coalesced chaining} : Zeer vergelijkbaar met separate chaining, maar ipv met extra gelinkte lijsten te werken wordt de gegeven tabel optimaal benut.
+	\item \textbf{Open adressering} : op voorhand worden de mogelijke geheugenlocaties waar de waardes voor een bepaalde hashwaarde staan berekend. Vervolgens wordt bij zoeken naar de eerste hash naar de eerste locatie gegaan. Staat de data daar niet springt men naar de volgende berekende geheugenlocatie enz,...
+\end{itemize}
+\subsection{Hashfuncties}
+\begin{itemize}
+	\item \textbf{delen} : $h(s) = s \% m$ \\
+		In praktijk zijn priemgetallen die niet te dicht bij machter van 2 liggen goede kandidaten voor m.
+	\item \textbf{vermenigvuldigen} : sleutel vermenigvuldigen met vaste fractie, deel na de komma behouden. Vervolgens vermenigvuldigen we dit met m en ronden af naar beneden. \\
+			$ h(s) = \floor{m(sC - \floor{sC})}$ \\
+			De waarde voor m blijkt niet kritisch te zijn dus men kiest een waarde in de trend van $2^i$.
+	\item \textbf{Universele hashing} : kies een random hashfunctie, het gedrag ervan wordt onafhankelijk van de gebruikte sleutels.
+\end{itemize}
+\section{Binaire zoekbomen}
+\begin{itemize}
+	\item Alle sleutels in de links deelboom zijn kleiner dan of gelijk aan de sleutel van de knoop.
+	\item Alle sleutels in de rechtse deelboom zijn groter dan of gelijk aan de sleutel van de knoop.
+	\item Wanneer men een zoekboom inorder overloopt dan krijgt men de sleutels in geranschikte volgorde.
+\end{itemize}
+
+\subsection{Zoeken}
+Kan recursief gebeuren, en men gaat als volgt te werk.
+\begin{itemize}
+	\item Vergelijk de sleutel (positie in boom) met de op te zoeken sleutel
+	\item Is de sleutel kleiner/groter dan de huidige sleutel, zoek recursief verder in linker/rechter deelboom
+	\item Is de sleutel gelijk aan de huidige sleutel, dan is de te zoeken sleutel gevonden
+	\item Bereik je een blad en heb je nog steeds de sleutel niet gevnoden, maak dit dan ook kenbaar.
+\end{itemize}
+
+\emph{Merk op dat deze actie steeds O(h) (ie. lineair) is.}
+
+\subsection{Min en max zoeken}
+\emph{Neem steeds linker/rechter deelboom dus ook lineair O(h).}
+
+\subsection{Toevoegen}
+\begin{itemize}
+	\item We vergelijken de toe te voegen sleutel met de huidige sleutel en wel dalen steeds links/rechts af tot we bij een sleutel komen die geen kinderen meer heeft. 
+	\item We voegen aan deze sleutel een nieuw kind toe met de toe te voegen sleutel.
+\end{itemize}
+\emph{Dit is opnieuw lineair O(h)} \\
+Wat met duplicate sleutels?
+\begin{itemize}
+	\item Voorzie 1 knoop voor alle duplicaten bestaande uit de gemeenschappelijke sleutel en een gelinkte lijst met bijhorende informatie. (voordeel is dat de hoogte van de boom minimaal blijft)
+	\item OF voorzie extra bit (byte). Wanneer we dubbele sleutels voegen we afhankelijk van de status van het bit de sleutel aan de linker/rechter deelboom toe. Het bit wordt ge\"{i}nverteerd voor een meer evenwichtige boom.
+	\item Je kan voorgaande methode ook toepassen met een random generator (steeds 50/50 links en rechts).
+\end{itemize}
+\subsection{Verwijderen}
+\begin{itemize}
+	\item \textbf{Lazy deletion} : een variabele houdt bij of een knoop verwijderd is. Handig is dit bijvoorbeeld bij duplicaten mbv gelinkte lijsten, je kan hierna terug makkelijk toevoegen door simpelweg deze variabele terug op actief te zetten. Nadeel is dat zoek en voeg toe hiermee rekening moeten houden.
+	\item \textbf{Effectie verwijderen} : wanneer veel knopen verwijderd worden biedt lazy deletion niet langer een oplossing. Verwijderen is de lastigste operatie in een binaire boom omdat rekening gehouden dient te worden met enkele mogelijke gevallen.
+		\begin{itemize}
+			\item \emph{Geen kinderen}: knoop kan zonder meer verwijderd worden (enkel ouder knoop indien nodig aanpassen volstaat)
+			\item \emph{1 kind }: de ouder van de te verwijderen knoop wordt nu de rechtstreekse ouder van het kind.
+			\item \emph{2 kinderen } : Er worden twee kinderen ouderloos (terwijl er slechts 1 wijzer vrijkomt). Voeg kleinste knoop van de rechter deelboom in op de plaats van de te verwijderen knoop.
+		\end{itemize}
+\end{itemize}
+
+Ook al is het wat complexer toch is de tijd nog steeds lineair (O(h)).
+
+\subsection{Threaded trees}
+Maakt gebruikt van de NULL pointers van left en right child bij de bladelement. Het laat de linker child wijzen naar de inorder voorganger en de rechter child wijzen naar de inorder opvolger. Is een hoogwaardig alternatief voor ouderwijzers of voor een stapel wanneer er geen ouderwijzers zijn.
+\begin{center}
+\includegraphics[scale=0.75]{img/threaded_tree.png}
+\end{center}
+\end{document}
