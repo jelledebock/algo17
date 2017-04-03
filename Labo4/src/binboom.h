@@ -21,6 +21,7 @@ using Binknoopptr=std::unique_ptr<Binknoop<T> >;
 template <class T>
 class Binboom:public Binknoopptr<T>{
     public:
+        using std::unique_ptr<Binknoop<T> >::unique_ptr;
         friend istream& operator>>(istream& is, Binboom<T>& bb){
             return bb.lees(is);
         }
@@ -38,11 +39,13 @@ class Binboom:public Binknoopptr<T>{
             std::unique_ptr<Binknoop<T> >::operator=(std::move(other));
             return *this;
         }
+        Binboom() : Binknoopptr <T>(nullptr){};
+        ~Binboom(){ this->release(); };
     private:
         void addNode(Binknoop<T> * node, bool left, int index, vector<T> sleutels, vector<int> linkerburen, vector<int> rechterburen);
 };
 
-template <typename T>
+template <class T>
 istream & Binboom<T>::lees(istream & input) {
     int aantal_nodes;
     input>>aantal_nodes;
@@ -81,9 +84,9 @@ istream & Binboom<T>::lees(istream & input) {
         i++;
     }
     if(parents[i]==false){
-        Binknoop<T> temp;
-        temp.sl = sleutels[i];
-        Binknoopptr<T> nieuw(&temp);
+        Binknoop<T> * temp = new Binknoop<T>();
+        temp->sl = sleutels[i];
+        Binknoopptr<T> nieuw(temp);
 
         *this=std::move(nieuw);
 
@@ -96,16 +99,20 @@ istream & Binboom<T>::lees(istream & input) {
 template <class T>
 void Binboom<T>::addNode(Binknoop<T> * node, bool left, int index, vector<T> sleutels, vector<int> linkerburen, vector<int> rechterburen){
     if(index!=-1){
-        Binboom<T> temp;
+        Binknoop<T> * temp = new Binknoop<T>();
+        temp->sl = sleutels[index];
 
-        temp.get()->sl = sleutels[index];
+        Binknoopptr<T> nieuw(temp);
+        Binboom<T> kind;
+        kind = std::move(nieuw);
+
         if(left){
-            node->links=std::move(temp);
+            node->links=std::move(kind);
             addNode(node->links.get(), true, linkerburen[index], sleutels, linkerburen, rechterburen);
             addNode(node->links.get(), false, rechterburen[index], sleutels, linkerburen, rechterburen);
         }
         else{
-            node->rechts=std::move(temp);
+            node->rechts=std::move(kind);
             addNode(node->rechts.get(), true, linkerburen[index], sleutels, linkerburen, rechterburen);
             addNode(node->rechts.get(), false, rechterburen[index], sleutels, linkerburen, rechterburen);
         }
