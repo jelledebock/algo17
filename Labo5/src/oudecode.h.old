@@ -1,0 +1,160 @@
+//
+// Created by jelle on 24.04.17.
+//
+
+#ifndef OUD_H
+#define OUD_H
+
+#include "backtrackflex.h"
+#include <vector>
+#include <iostream>
+
+using namespace std;
+typedef vector<int> knoop;
+
+class Getal{
+public:
+    Getal(int n){
+        for(int i = 0 ; i < n ; i++){
+            getal.push_back(0);
+        }
+    };
+    void setNumber(int pos, int num){
+        getal[pos]=num;
+    };
+    int getNumber(int pos){
+        return getal[pos];
+    };
+    vector<int> getGetal(){
+        return getal;
+    };
+    void addDigit(int num){
+        if(pos<getal.size()){
+            getal[pos++]=num;
+        }
+        else{
+            throw "Out of Getal bound";
+        }
+    }
+    int lengte() const{
+        return getal.size();
+    };
+
+    bool controleer(){
+        //Controleer de vier criteria
+        //Criterium 1
+        int j=getal.size()-1;
+        int sum_of_4_digits = 0;
+        while(j>0 && j!=getal.size()-5){
+            sum_of_4_digits+=getal[j];
+            j--;
+        }
+        if(sum_of_4_digits>=13)
+            return false;
+        //Criterium 2
+        vector<bool> aanwezig(10,false);
+        j=getal.size()-1;
+        while(j>0 && j!=getal.size()-4){
+            if(aanwezig[getal[j]])
+                return false;
+            j--;
+        }
+        //Criterium 3
+        if(getal.size()>=6) {
+            if (getal[getal.size() - 1] == getal[getal.size() - 7])
+                return false;
+        }
+        return true;
+    };
+
+    int sumOfDigits(){
+        //Criterium 4
+        int sum_of_digits = 0;
+        for(int i=0; i<getal.size(); i++){
+            sum_of_digits+=getal[i];
+        }
+        return sum_of_digits;
+    };
+
+    int getPos(){ return pos; };
+private:
+    vector<int> getal;
+    int pos=0;
+};
+
+class Getallenrij : public Backtrackflex<Getal>{
+public:
+    Getallenrij(int n){
+        this->n = n;
+        deeloplossing.push_back(new Getal(n));
+        losOp(true);
+    };
+    void geefOplossing();
+protected:
+    bool controle();
+    void verwerk();
+    vector<Getal> geefVerdere();
+private:
+    int n;
+    int maxsum=0;
+    bool controleer_criteria();
+    Getal beste_oplossing;
+};
+
+void Getallenrij::geefOplossing() {
+    cout<<"Beste oplossing: ";
+    for(int getal : beste_oplossing.getGetal()){
+        cout<<getal;
+    }
+    cout<<endl;
+}
+
+vector<Getal> Getallenrij::geefVerdere() {
+    const Getal * laatste;
+    if(deeloplossing.size()>0)
+        laatste = deeloplossing[deeloplossing.size()-1];
+    else
+        laatste = new Getal(n);
+    //Get last number
+    if(laatste->getPos()<laatste->lengte()){
+        vector<Getal> mogelijkheden;
+        for(int i=0;i<9;i++){
+            Getal mogelijkheid = *laatste;
+            mogelijkheid.addDigit(i);
+            cout<<"TOEVOEGEN: ";
+            for(int getal : beste_oplossing.getGetal()){
+                cout<<getal;
+            }
+            cout<<endl;
+            mogelijkheden.push_back(mogelijkheid);
+        }
+        return mogelijkheden;
+    }
+    else{
+        return vector<knoop>();
+    }
+}
+
+void Getallenrij::verwerk() {
+    beste_oplossing = *deeloplossing.back();
+}
+
+bool Getallenrij::controle() {
+    return controleer_criteria();
+}
+bool Getallenrij::controleer_criteria() {
+    if(deeloplossing.size()>0) {
+        Getal mogelijkheid = *deeloplossing.back();
+        bool eerste_drie_oke = mogelijkheid.controleer();
+        int sum_of_digits = mogelijkheid.sumOfDigits();
+
+        if(sum_of_digits>beste_oplossing.sumOfDigits()){
+            beste_oplossing = mogelijkheid;
+            return true;
+        }
+    }
+    return false;
+
+}
+
+#endif //OUD_H
